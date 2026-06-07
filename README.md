@@ -11,7 +11,7 @@ Personal collection of agent skills.
 - `html-artifacts` — render plan as self-contained HTML (step 2)
 - [superpowers](https://github.com/obra/superpowers) plugin — `writing-plans` (step 2), `test-driven-development` (step 3), `verification-before-completion` + `requesting-code-review` (step 4)
 
-## Related tools
+## Good to have
 
 - [claude-mem](https://github.com/thedotmack/claude-mem) — gives Claude a long-term memory. Normally Claude forgets everything when a session ends; claude-mem automatically records what you worked on and lets future sessions look it up, so you can ask things like "what did I change in auth last month" without re-explaining anything. Technically: lifecycle hooks capture session work into SQLite + vector search. Alternative to built-in memory when automatic recall across sessions/projects is needed.
 
