@@ -37,7 +37,7 @@ Invoke `superpowers:test-driven-development`. Follow the approved doc.
 
 Spawn a fresh subagent via the Agent tool (do NOT review your own work inline). The reviewer:
 
-- Runs the app / tests to verify behavior — use the project `run-app` skill for exact startup + verify steps and seeded login (plus `verify` / `run` skills, `superpowers:verification-before-completion`).
+- Runs the app / tests to verify behavior — use the `verify` / `run` skills (and a project-specific run skill if one exists), plus `superpowers:verification-before-completion`.
 - Audits the diff for bugs + quality (`code-review` skill).
 - Reports findings as a structured list (severity, file:line, problem, fix). Reports back — does not fix.
 
