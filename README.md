@@ -13,9 +13,10 @@ Personal collection of agent skills.
 
 ## Good to have
 
-- [claude-mem](https://github.com/thedotmack/claude-mem) — gives Claude a long-term memory. Normally Claude forgets everything when a session ends; claude-mem automatically records what you worked on and lets future sessions look it up, so you can ask things like "what did I change in auth last month" without re-explaining anything. Technically: lifecycle hooks capture session work into SQLite + vector search. Alternative to built-in memory when automatic recall across sessions/projects is needed.
+- [claude-mem](https://github.com/thedotmack/claude-mem) — gives Claude a long-term memory. Normally Claude forgets everything when a session ends; claude-mem automatically records what you worked on and lets future sessions look it up, so you can ask things like "what did I change in auth last month" without re-explaining anything. Technically: lifecycle hooks capture session work into SQLite + vector search. Alternative to built-in memory when automatic recall across sessions/projects is needed. _Note: burns a lot of tokens — not recommended for Pro users._
 
 ## Attribution
 
 - `grill-with-docs/` — from [mattpocock/skills](https://github.com/mattpocock/skills/tree/main/skills/engineering/grill-with-docs)
 - `improve-codebase-architecture/` — from [mattpocock/skills](https://github.com/mattpocock/skills/tree/main/skills/engineering/improve-codebase-architecture)
+- `html-artifacts/` — by [margibs](https://github.com/margibs)
