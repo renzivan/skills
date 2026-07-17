@@ -1,6 +1,6 @@
 ---
 name: improve-codebase-with-docs
-description: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/, and seed those docs from already-decided work. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, make a codebase more testable and AI-navigable, or backfill CONTEXT.md / ADRs from shipped or approved findings.
+description: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/, seed those docs from already-decided work, and emit a wired refactor checklist (docs/style-guide.html) agents actually follow. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, make a codebase more testable and AI-navigable, backfill CONTEXT.md / ADRs from shipped findings, or produce a followed style-guide / refactor checklist.
 ---
 
 # Improve Codebase Architecture
@@ -82,6 +82,14 @@ These are real decisions, already shipped, so recording them fabricates nothing;
 
 Skip any decision that is easy to reverse, unsurprising, or had no real alternative — same bar as the grilling loop's ADR offer. Don't manufacture an ADR just to fill the directory.
 
+### 2c. Emit the checklist and wire it
+
+The Markdown guide from step 2 is the detailed backing; it isn't what an agent loads before writing code. Emit a single, wired checklist that is: `docs/style-guide.html` (see [CHECKLIST-REPORT.md](CHECKLIST-REPORT.md) for the full scaffold, sections, styling, and wiring snippets).
+
+- **Three sections.** Standing conventions (`SC*`, binding for new code — sourced from the repo's `CLAUDE.md`, linter config, and the step-2b ADRs, not invented); the open refactor checklist (one card per candidate — target-state rule line + why + Do/Don't + cost + evidence count); and a shipped ledger (done deepenings, `✓`/`◐`/`✗`, each citing its ADR and the `SC` it became).
+- **Wire it — a doc nobody loads changes nothing.** Detect what the repo uses, then wire three ways (see [CHECKLIST-REPORT.md](CHECKLIST-REPORT.md) for exact snippets): (1) a "Domain docs & style guide" pointer in every agent memory file present — `CLAUDE.md` **and/or** `AGENTS.md` — marking which docs are binding vs proposals; (2) a PreToolUse hook in `.claude/settings.json` (matcher `Edit|Write|MultiEdit`, firing on the repo's real source glob) telling the agent to read `docs/style-guide.html` before editing source — append to existing hooks, never clobber, validate with `jq empty`; (3) optionally, lint rules for the standing conventions a linter can mechanically enforce. Match the repo's actual source root/extensions and memory-file convention — don't assume `CLAUDE.md` + `src/**/*.{ts,vue}`.
+- **Standing conventions are binding; open items are proposals.** The hook must say so explicitly, so an agent applies the conventions but never auto-implements an open candidate.
+
 ### 3. Grilling loop
 
 Once the user picks a candidate, drop into a grilling conversation. Walk the design tree with them — constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
@@ -92,3 +100,4 @@ Side effects happen inline as decisions crystallize:
 - **Sharpening a fuzzy term during the conversation?** Update `CONTEXT.md` right there.
 - **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when the reason would actually be needed by a future explorer to avoid re-suggesting the same thing — skip ephemeral reasons ("not worth it right now") and self-evident ones. See [ADR-FORMAT.md](../grill-with-docs/ADR-FORMAT.md).
 - **Want to explore alternative interfaces for the deepened module?** See [INTERFACE-DESIGN.md](INTERFACE-DESIGN.md).
+- **Candidate implemented?** Update `docs/style-guide.html`: flip its card from `○ open` to a `✓` row in the shipped ledger, cite its new ADR, and — if it establishes an always/never rule for future code — add a Standing convention (`SC*`) referencing that ADR. The checklist is the living surface; keep `codebase-guide.md` as the full history.
