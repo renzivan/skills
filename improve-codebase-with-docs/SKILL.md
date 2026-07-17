@@ -1,6 +1,6 @@
 ---
 name: improve-codebase-with-docs
-description: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/, seed those docs from already-decided work, and emit a wired refactor checklist (docs/style-guide.html) agents actually follow. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, make a codebase more testable and AI-navigable, backfill CONTEXT.md / ADRs from shipped findings, or produce a followed style-guide / refactor checklist.
+description: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/, seed those docs from already-decided work, and emit a wired refactor checklist (CONVENTIONS.md) agents actually follow. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, make a codebase more testable and AI-navigable, backfill CONTEXT.md / ADRs from shipped findings, or produce a followed CONVENTIONS.md / style-guide / refactor checklist.
 ---
 
 # Improve Codebase Architecture
@@ -44,53 +44,34 @@ Then use the Agent tool with `subagent_type=Explore` to walk the codebase. Don't
 
 Apply the **deletion test** to anything you suspect is shallow: would deleting it concentrate complexity, or just move it? A "yes, concentrates" is the signal you want.
 
-### 2. Present candidates as a Markdown report
+### 2. Backfill the domain docs from decided work
 
-Write a Markdown file to `docs/codebase-guide.md` in the repo so it's versioned alongside `docs/adr/`. Create the `docs/` directory if it doesn't exist. Use the stable filename (no timestamp) so each run overwrites the previous guide and git diffs stay clean. Tell the user the absolute path.
-
-If a previous run's guide already exists at that path, read it first: carry decided/implemented/rejected candidates forward as a short status ledger (one line each), don't re-propose them, and let its deferrals inform this round's candidates.
-
-Diagrams use **Mermaid fenced code blocks** (```mermaid) — GitHub, VS Code, and most Markdown viewers render them natively. Use Mermaid when relationships are graph-shaped (call graphs, dependencies, sequences); use Markdown tables when the point is a side-by-side divergence comparison. Each candidate gets a **before/after visualisation** (a two-subgraph Mermaid diagram or a comparison table). Be visual, within what Markdown can carry.
-
-For each candidate, the same template as before, rendered as a `##` section:
-
-- **Files** — which files/modules are involved, with line numbers
-- **Problem** — why the current architecture is causing friction
-- **Solution** — plain English description of what would change
-- **Benefits** — explained in terms of locality and leverage, and how tests would improve
-- **Before / After diagram** — Mermaid subgraphs or a comparison table, illustrating the shallowness and the deepening
-- **Recommendation strength** — one of 🟢 `Strong`, 🟠 `Worth exploring`, ⚪ `Speculative`, stated on the line under the heading
-
-End the report with a **Top recommendation** section: which candidate you'd tackle first and why.
-
-**Use CONTEXT.md vocabulary for the domain, and [LANGUAGE.md](LANGUAGE.md) vocabulary for the architecture.** If `CONTEXT.md` defines "Order," talk about "the Order intake module" — not "the FooBarHandler," and not "the Order service."
-
-**ADR conflicts**: if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting the ADR. Mark it clearly in the section (e.g. a blockquote callout: _"contradicts ADR-0007 — but worth reopening because…"_). Don't list every theoretical refactor an ADR forbids.
-
-See [MD-REPORT.md](MD-REPORT.md) for the full Markdown scaffold, diagram patterns, and style guidance.
-
-Do NOT propose interfaces yet. After the file is written, ask the user: "Which of these would you like to explore?"
-
-### 2b. Backfill the domain docs from decided work
-
-Runs when the guide already carries a ledger of implemented/decided/rejected candidates but `CONTEXT.md` is missing or `docs/adr/` is empty — or whenever the user asks to seed the docs from finished work.
+Before proposing anything new, record what is already decided — the standing conventions in step 3 rest on it.
+Runs whenever `CONTEXT.md` is missing or `docs/adr/` is empty, or the user asks to seed the docs from finished work.
 These are real decisions, already shipped, so recording them fabricates nothing; don't wait for the grilling loop to write them one at a time.
 
 - **CONTEXT.md** — harvest the domain nouns the landed modules are named after. Project-specific terms only (an `Order`, a `Destination` — not general programming concepts); opinionated, with an `_Avoid_` list of banned synonyms per term. Follow [CONTEXT-FORMAT.md](../grill-with-docs/CONTEXT-FORMAT.md). Never invent a term the code doesn't use.
 - **ADRs** — write one per decided candidate that clears the [ADR-FORMAT.md](../grill-with-docs/ADR-FORMAT.md) bar: **hard to reverse · surprising without context · a real trade-off**. Reverted/rejected candidates and deliberate deviations ("we forked X on purpose", "we kept the mixed shape") are the highest-value ADRs — they stop the next review re-suggesting the settled thing. Number sequentially from the highest existing file.
-- **Cross-reference** — cite the new ADR numbers from the guide's ledger rows and from any live candidate they constrain, and fix the lede so it no longer claims the docs are absent.
+- Sources for "what's decided": the repo's git history, `CLAUDE.md`/`AGENTS.md`, linter config, and any prior checklist's shipped ledger.
 
 Skip any decision that is easy to reverse, unsurprising, or had no real alternative — same bar as the grilling loop's ADR offer. Don't manufacture an ADR just to fill the directory.
 
-### 2c. Emit the checklist and wire it
+### 3. Emit the checklist and wire it
 
-The Markdown guide from step 2 is the detailed backing; it isn't what an agent loads before writing code. Emit a single, wired checklist that is: `docs/style-guide.html` (see [CHECKLIST-REPORT.md](CHECKLIST-REPORT.md) for the full scaffold, sections, styling, and wiring snippets).
+The one durable, followed artifact is `CONVENTIONS.md` at the repo root (beside `CLAUDE.md`/`AGENTS.md` and `CONTEXT.md`) — a Markdown checklist, the only architecture doc this skill maintains (see [CHECKLIST-REPORT.md](CHECKLIST-REPORT.md) for the full scaffold, sections, and wiring snippets). Markdown, not HTML: it's edited every round and reviewed in PR diffs. Stable filename (no timestamp) so each run overwrites cleanly and diffs in git. Tell the user the absolute path.
 
-- **Three sections.** Standing conventions (`SC*`, binding for new code — sourced from the repo's `CLAUDE.md`, linter config, and the step-2b ADRs, not invented); the open refactor checklist (one card per candidate — target-state rule line + why + Do/Don't + cost + evidence count); and a shipped ledger (done deepenings, `✓`/`◐`/`✗`, each citing its ADR and the `SC` it became).
-- **Wire it — a doc nobody loads changes nothing.** Detect what the repo uses, then wire three ways (see [CHECKLIST-REPORT.md](CHECKLIST-REPORT.md) for exact snippets): (1) a "Domain docs & style guide" pointer in every agent memory file present — `CLAUDE.md` **and/or** `AGENTS.md` — marking which docs are binding vs proposals; (2) a PreToolUse hook in `.claude/settings.json` (matcher `Edit|Write|MultiEdit`, firing on the repo's real source glob) telling the agent to read `docs/style-guide.html` before editing source — append to existing hooks, never clobber, validate with `jq empty`; (3) optionally, lint rules for the standing conventions a linter can mechanically enforce. Match the repo's actual source root/extensions and memory-file convention — don't assume `CLAUDE.md` + `src/**/*.{ts,vue}`.
+If a checklist already exists, read it first: carry the shipped ledger forward (it is the authority on status), don't re-propose shipped or rejected items, and let its deferrals inform this round.
+
+- **Three sections.**
+  - *Standing conventions* (`SC*`, binding for new code) — sourced from `CLAUDE.md`/`AGENTS.md`, linter config, and the step-2 ADRs, **not invented**. Each row cites its basis.
+  - *Open refactor checklist* — one card per candidate: target-state rule line + why + Do/Don't (where a snippet clarifies) + cost pill + evidence count. Order cards cheapest/highest-signal first and state that order in the lede. Use CONTEXT.md vocabulary for the domain and [LANGUAGE.md](LANGUAGE.md) vocabulary for the architecture. If a candidate contradicts an ADR, flag it with a callout rather than silently proposing it.
+  - *Shipped ledger* — done deepenings (`✓`/`◐`/`✗` reverted), each citing its ADR and the `SC` it became.
+- **Wire it — a doc nobody loads changes nothing.** Detect what the repo uses, then wire three ways (see [CHECKLIST-REPORT.md](CHECKLIST-REPORT.md) for exact snippets): (1) a "Domain docs & conventions" pointer in every agent memory file present — `CLAUDE.md` **and/or** `AGENTS.md` — marking which docs are binding vs proposals; (2) a PreToolUse hook in `.claude/settings.json` (matcher `Edit|Write|MultiEdit`, firing on the repo's real source glob) telling the agent to read `CONVENTIONS.md` before editing source — append to existing hooks, never clobber, validate with `jq empty`; (3) optionally, lint rules for the standing conventions a linter can mechanically enforce. Match the repo's actual source root/extensions and memory-file convention — don't assume `CLAUDE.md` + `src/**/*.{ts,vue}`.
 - **Standing conventions are binding; open items are proposals.** The hook must say so explicitly, so an agent applies the conventions but never auto-implements an open candidate.
 
-### 3. Grilling loop
+Do NOT propose interfaces yet. After the checklist is written, ask the user: "Which of these would you like to explore?"
+
+### 4. Grilling loop
 
 Once the user picks a candidate, drop into a grilling conversation. Walk the design tree with them — constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
 
@@ -100,4 +81,4 @@ Side effects happen inline as decisions crystallize:
 - **Sharpening a fuzzy term during the conversation?** Update `CONTEXT.md` right there.
 - **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when the reason would actually be needed by a future explorer to avoid re-suggesting the same thing — skip ephemeral reasons ("not worth it right now") and self-evident ones. See [ADR-FORMAT.md](../grill-with-docs/ADR-FORMAT.md).
 - **Want to explore alternative interfaces for the deepened module?** See [INTERFACE-DESIGN.md](INTERFACE-DESIGN.md).
-- **Candidate implemented?** Update `docs/style-guide.html`: flip its card from `○ open` to a `✓` row in the shipped ledger, cite its new ADR, and — if it establishes an always/never rule for future code — add a Standing convention (`SC*`) referencing that ADR. The checklist is the living surface; keep `codebase-guide.md` as the full history.
+- **Candidate implemented?** Update `CONVENTIONS.md`: flip its open item to a `✓` row in the shipped ledger, cite its new ADR, and — if it establishes an always/never rule for future code — add a Standing convention (`SC*`) referencing that ADR.
